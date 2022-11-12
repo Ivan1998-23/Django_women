@@ -19,7 +19,6 @@ def index(request):
 
     context = {
         'posts': posts,
-        'menu': menu,
         'title': 'Главная страница',
         'cat_selected': 0,
     }
@@ -51,7 +50,6 @@ def show_category(request, cat_id):
         raise Http404()
     context = {
         'posts': posts,
-        'menu': menu,
         'title': 'Отоброжение по рубрикам',
         'cat_selected': cat_id,
     }
