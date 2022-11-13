@@ -15,6 +15,7 @@ class WomenAdmin(admin.ModelAdmin):
     list_editable = ('is_published',)
     #по чому можемо фільтрувати
     list_filter = ('is_published', 'time_create')
+    prepopulated_fields = {"slug": ("title",)}
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -24,6 +25,8 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display_links = ('id', 'name')
     # по яким полям можна робити пошук, ставимо " , " бо треба передати кортеж
     search_fields = ('name',)
+    #автоматически заполняет слаг на основе name
+    prepopulated_fields = {"slug" : ("name",)}
 
 
 #реєструємо моделі

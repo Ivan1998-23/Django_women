@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseNotFound, Http404
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 # Импорт БД
 from .models import  *
 
@@ -39,8 +39,19 @@ def contact(request):
 def login(request):
     return HttpResponse("Авторизация")
 
-def show_post(request, post_id):
-    return HttpResponse(f"Отображение статьи с id = {post_id}")
+#Берем запись из модели Вимен у которого первичный ключь pk
+#если не найдена стр. то ошибка 404 (ф-я get_object_or_404)
+#
+def show_post(request, post_slug):
+    post = get_object_or_404(Women, pk=post_slug)
+    # Параметры которые будут передаватся
+    context = {
+        'post' : post,
+        'menu' : menu,
+        'title' : post.title,
+        'cat_selected' : post.cat_id,
+    }
+    return render(request, 'women/post.html', context=context)
 
 def show_category(request, cat_id):
     #выбираем с таблицы Women только те у которых   категория общая
