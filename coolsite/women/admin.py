@@ -26,7 +26,7 @@ class CategoryAdmin(admin.ModelAdmin):
     # по яким полям можна робити пошук, ставимо " , " бо треба передати кортеж
     search_fields = ('name',)
     #автоматически заполняет слаг на основе name
-    prepopulated_fields = {"slug" : ("name",)}
+    prepopulated_fields = {"slug": ("name",)}
 
 
 #реєструємо моделі

@@ -43,7 +43,7 @@ def login(request):
 #если не найдена стр. то ошибка 404 (ф-я get_object_or_404)
 #
 def show_post(request, post_slug):
-    post = get_object_or_404(Women, pk=post_slug)
+    post = get_object_or_404(Women, slug=post_slug)
     # Параметры которые будут передаватся
     context = {
         'post' : post,
