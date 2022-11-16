@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.shortcuts import render, redirect, get_object_or_404
+
+from .forms import *
 # Импорт БД
 from .models import  *
 
@@ -29,7 +31,22 @@ def about(request):
     return render(request, 'women/about.html', {'menu' : menu, 'title': 'О сайте'})
 
 def addpage(request):
-    return HttpResponse("Добавление статьи")
+    #Проверка на то что пользователь ввел не правильные данные
+    #Если нажмет отправить но дынные не правильные то он вернет страницу с правильными
+    # строками
+    if request.method == 'POST':
+        form = AddPostForm(request.POST)
+        if form.is_valid():
+            #print(form.cleaned_data)
+            try:
+                Women.objects.create(**form.cleaned_data)
+                return redirect('home')
+            except:
+                form.add_error(None, 'Ошибка добавления поста')
+
+    else:
+        form = AddPostForm()
+    return render(request, 'women/addpage.html', {'form': form,  'memu': menu, 'title': "Добавление статьи"})
 
 
 def contact(request):
