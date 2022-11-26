@@ -1,31 +1,31 @@
+from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import *
 # Импорт БД
 from .models import *
+from .utils import *
+
 
 # title это то что написано на сылке
 #menu = ["О сайте", "Добавить статью", "Обратная связь", "Войти"]
-menu = [{'title': 'О сайте', 'url_name': 'about'},
-        {'title': 'Добавить статью', 'url_name': 'add_page'},
-        {'title': 'Обратная связь', 'url_name': 'contact'},
-        {'title': 'Войти', 'url_name': 'login'}
-]
 
-class WomenHome(ListView):
+
+class WomenHome(DataMixin, ListView):
+    paginate_by = 2
     model = Women
     template_name = 'women/index.html'
     context_object_name = 'posts'
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['menu'] = menu
-        context['title'] = 'Главная страница'
-        context['cat_selected'] = 0
-        return context
+        c_def = self.get_user_context(title='Головна сторінка')
+        return dict(list(context.items()) + list(c_def.items()))
+
 
     def get_queryset(self):
         return Women.objects.filter(is_published=True)
@@ -43,17 +43,26 @@ class WomenHome(ListView):
 #     return render(request, 'women/index.html', context=context)
 
 def about(request):
-    return render(request, 'women/about.html', {'menu' : menu, 'title': 'О сайте'})
+    contact_list = Women.objects.all()
+    paginator = Paginator(contact_list, 2)
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'women/about.html', {'page_obj': page_obj, 'menu' : menu, 'title': 'О сайте'})
 #
-class AddPage(CreateView):
+class AddPage(LoginRequiredMixin, DataMixin, CreateView):
     form_class = AddPostForm
     template_name = 'women/addpage.html'
     success_url = reverse_lazy('home')
+    login_url = reverse_lazy('home')
+    # генерация ошибки "Доступ запрещон"  403 Forbidden
+    # raise_exception = True
+
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['menu'] = menu
-        context['title'] = 'Добавление статьи'
-        return context
+        c_def = self.get_user_context(title='Добавление статьи')
+        return dict(list(context.items()) + list(c_def.items()))
+
 
 
 # def addpage(request):
@@ -99,20 +108,19 @@ def login(request):
 
 
 #Создаем клас представлений
-class ShowPost(DetailView):
+class ShowPost(DataMixin,  DetailView):
     model = Women
     template_name = "women/post.html"
     slug_url_kwarg = 'post_slug'
     context_object_name = 'post'
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['menu'] = menu
-        context['title'] = context['post']
-        return context
+        c_def = self.get_user_context(title=context['post'])
+        return dict(list(context.items()) + list(c_def.items()))
 
 
 
-class WomenCategory(ListView):
+class WomenCategory(DataMixin, ListView):
     model = Women
     template_name = 'women/index.html'
     context_object_name = 'posts'
@@ -122,9 +130,8 @@ class WomenCategory(ListView):
         return Women.objects.filter(cat__slug=self.kwargs['cat_slug'], is_published=True)
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['menu'] = menu
-        context['title'] = 'Категория - ' + str(context['posts'][0].cat)
-        context['cat_selected'] = context['posts'][0].cat_id
+        c_def = self.get_user_context(title='Категория - ' + str(context['posts'][0].cat),
+                                      cat_selected=context['posts'][0].cat_id)
         return context
 
 # def show_category(request, cat_id):
