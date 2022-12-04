@@ -34,7 +34,12 @@
 								{% endif %}
 							{% endfor %} -->
 							{% show_menu %}
-							<li><a href="{% url 'register' %}">Регистрация</a> | <a href="{% url 'login' %}">Войти</a></li>
+
+							{% if request.user.is_authenticated %}
+								<li class="last"> {{ user.username }} | <a href="{% url 'logout' %}">Выйти</a></li>
+							{% else %}
+								<li><a href="{% url 'register' %}">Регистрация</a> | <a href="{% url 'login' %}">Войти</a></li>
+							{% endif %}
 						</ul>
 						<div class="clear"></div>
 					</div>

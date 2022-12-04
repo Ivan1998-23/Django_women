@@ -1,4 +1,6 @@
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import logout, login
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.views import LoginView
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseNotFound, Http404
@@ -91,8 +93,8 @@ def contact(request):
     return HttpResponse("Обратная связь")
 
 
-def login(request):
-    return HttpResponse("Авторизация")
+# def login(request):
+#     return HttpResponse("Авторизация")
 
 
 # Берем запись из модели Вимен у которого первичный ключь pk
@@ -168,3 +170,26 @@ class RegisterUser(DataMixin, CreateView):
         c_def = self.get_user_context(title="Регистрация")
         return dict(list(context.items()) + list(c_def.items()))
 
+    # вызывается при успешной проверки формы регистрации  (успешной регистрации пользователя)
+    def form_valid(self, form):
+        #добовляем пользователя в БД
+        user = form.save()
+        #Авторизовует пользователя
+        login(self.request, user)
+        return redirect('home')
+
+class LoginUser(DataMixin, LoginView):
+    form_class = LoginUserForm
+    template_name = 'women/login.html'
+    def get_context_data(self,*, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title="Авторризация")
+        return dict(list(context.items()) + list(c_def.items()))
+
+    # ф-я если пользователь залогинелся то он переходит на основную страницу
+    def get_success_url(self):
+        return reverse_lazy('home')
+
+def LogoutUser(request):
+    logout(request)
+    return redirect('login')
